@@ -1,0 +1,19 @@
+# Render blueprint for the SMM panel (free tier).
+# In Render: New -> Blueprint -> connect the repo containing this file.
+services:
+  - type: web
+    name: smm-panel
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: TURSO_DATABASE_URL
+        sync: false # set in Render dashboard, e.g. libsql://your-db.turso.io
+      - key: TURSO_AUTH_TOKEN
+        sync: false # set in Render dashboard (secret)
+      - key: RECOVERY_SECRET
+        sync: false # set in Render dashboard (secret) — used by "Forgot password?"
+      - key: NODE_VERSION
+        value: "20"
