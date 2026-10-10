@@ -156,7 +156,10 @@ async function fetchProviderServices(keyOverride) {
   }
 }
 
-function tieredMargin(rateUsd) {
+function tieredMargin(rateUsd, serviceName) {
+  // Followers always get Rs.150 profit (user's rule)
+  const name = (serviceName || "").toLowerCase();
+  if (name.includes("follower")) return 150;
   // Margin based on provider cost in PKR (user's structure):
   const costPkr = rateUsd * 277;
   if (costPkr <= 100) return 50;    // cost up to Rs.100 → Rs.50 profit
@@ -174,7 +177,7 @@ async function syncAllProviderServices(keyOverride) {
     platform: service.category,
     name: service.name,
     providerRateUsd: service.rate,
-    pricePkr: Math.ceil(service.rate * USD_TO_PKR + tieredMargin(service.rate)),
+    pricePkr: Math.ceil(service.rate * USD_TO_PKR + tieredMargin(service.rate, service.name)),
     minQuantity: service.min,
     maxQuantity: service.max,
     refill: service.refill,
@@ -186,7 +189,7 @@ async function syncAllProviderServices(keyOverride) {
       platform: service.category,
       name: service.name,
       providerRateUsd: service.rate,
-      pricePkr: Math.ceil(service.rate * USD_TO_PKR + tieredMargin(service.rate)),
+      pricePkr: Math.ceil(service.rate * USD_TO_PKR + tieredMargin(service.rate, service.name)),
       minQuantity: service.min,
       maxQuantity: service.max,
       refill: service.refill,
