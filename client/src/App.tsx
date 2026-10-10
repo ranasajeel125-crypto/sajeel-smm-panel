@@ -77,13 +77,13 @@ function PublicLanding({ data, onAuth }: { data: PublicData; onAuth: (mode: "log
         <h2>One balance. Three clear steps.</h2>
         <ol><li><span>01</span><b>Add funds</b><p>Send through JazzCash and submit the TID.</p></li><li><span>02</span><b>Owner verifies</b><p>Your balance changes only after approval.</p></li><li><span>03</span><b>Order & track</b><p>Place an order and refresh its provider status.</p></li></ol>
       </section>
-      <section className="owner-card" style={{ display: "flex", alignItems: "center", gap: "20px", padding: "28px", margin: "32px 0", background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)" }}>
-        <img src="/owner.jpg" alt="Sajeel Rajpoot" style={{ width: "110px", height: "110px", borderRadius: "50%", objectFit: "cover", border: "3px solid #25D366", boxShadow: "0 4px 16px rgba(37,211,102,0.3)" }} />
-        <div>
+      <section className="owner-card" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "20px", padding: "24px", margin: "32px 0", background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
+        <img src="/owner.jpg" alt="Sajeel Rajpoot" style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", border: "3px solid #25D366", boxShadow: "0 4px 16px rgba(37,211,102,0.3)", flexShrink: 0 }} />
+        <div style={{ minWidth: 0, flex: "1 1 200px" }}>
           <p className="overline dark" style={{ margin: "0 0 6px" }}>Your panel owner</p>
-          <h3 style={{ margin: "0 0 8px", fontSize: "1.4rem" }}>Sajeel Rajpoot</h3>
+          <h3 style={{ margin: "0 0 8px", fontSize: "1.3rem", wordBreak: "break-word" }}>Sajeel Rajpoot</h3>
           <p style={{ margin: "0 0 12px", opacity: 0.8 }}>Koi masla ho? Direct rabta karein!</p>
-          <a href="https://wa.me/923266040350?text=Assalam-o-Alaikum!%20Mujhe%20SMM%20panel%20me%20masla%20hai." target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ textDecoration: "none" }}>WhatsApp karein</a>
+          <a href="https://wa.me/923266040350?text=Assalam-o-Alaikum!%20Mujhe%20SMM%20panel%20me%20masla%20hai." target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ textDecoration: "none", display: "inline-block" }}>WhatsApp karein</a>
         </div>
       </section>
     </main>
