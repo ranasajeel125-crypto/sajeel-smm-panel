@@ -48,10 +48,10 @@ function PublicLanding({ data, onAuth }: { data: PublicData; onAuth: (mode: "log
             {data.has_owner ? <button className="btn btn-ghost-light" onClick={() => onAuth("login")}>Sign in</button> : null}
           </div>
         </div>
-        <div className="price-ticket" aria-label="Pricing promise">
-          <span>Margin model</span><strong>Rs. 150</strong><small>included per 1,000 units</small>
+        <div className="price-ticket" aria-label="Welcome">
+          <span>Welcome to</span><strong>Pakistan's Best</strong><small>social media services panel</small>
           <div className="ticket-rule" />
-          <p>Order price = (rate ÷ 1,000) × quantity, calculated before submission.</p>
+          <p>Real likes, followers & views — fast delivery, secure JazzCash payments.</p>
         </div>
       </div>
     </section>
