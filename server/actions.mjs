@@ -157,11 +157,12 @@ async function fetchProviderServices(keyOverride) {
 }
 
 function tieredMargin(rateUsd) {
-  // Smart margin per service based on provider cost:
-  if (rateUsd < 0.5) return 50;    // cheap (likes/views): Rs.50/1k
-  if (rateUsd < 2.0) return 150;   // mid: Rs.150/1k
-  if (rateUsd < 10.0) return 250;  // premium (followers): Rs.250/1k
-  return 500;                       // ultra premium (YT subs): Rs.500/1k
+  // Margin based on provider cost in PKR (user's structure):
+  const costPkr = rateUsd * 277;
+  if (costPkr <= 100) return 50;    // cost up to Rs.100 → Rs.50 profit
+  if (costPkr <= 400) return 100;   // cost Rs.100-400 → Rs.100 profit
+  if (costPkr <= 2000) return 150;  // cost Rs.400-2000 → Rs.150 profit
+  return 500;                        // cost above Rs.2000 → Rs.500 profit
 }
 
 async function syncAllProviderServices(keyOverride) {
