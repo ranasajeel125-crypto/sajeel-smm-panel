@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Actions } from "./actions.mjs";
 import { initDb } from "./db.mjs";
+import { googleAuthUrl, handleGoogleCallback } from "./google-auth.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -17,6 +18,28 @@ app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "smm-panel" });
+});
+
+// Google OAuth: redirect to Google
+app.get("/api/auth/google", (req, res) => {
+  const url = googleAuthUrl(req);
+  if (!url) return res.status(500).send("Google login is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in env vars.");
+  res.redirect(url);
+});
+
+// Google OAuth: callback - creates/logs in user, then redirects with token
+app.get("/api/auth/google/callback", async (req, res) => {
+  try {
+    const result = await handleGoogleCallback(req);
+    if (!result.ok) {
+      return res.redirect(`/?google_error=${encodeURIComponent(result.message || "Login failed")}`);
+    }
+    // Pass token to frontend via URL hash (not logged by servers)
+    res.redirect(`/#google_token=${encodeURIComponent(result.token)}`);
+  } catch (err) {
+    console.error("[google-auth] callback error:", err && err.message ? err.message : err);
+    res.redirect("/?google_error=" + encodeURIComponent("Something went wrong. Please try again."));
+  }
 });
 
 app.post("/api/:action", async (req, res) => {

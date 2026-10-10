@@ -134,6 +134,17 @@ function AuthPanel({ initialMode, hasOwner, onClose, onSuccess }: { initialMode:
       {mode === "forgot" ? <Field label="Recovery secret" hint="The RECOVERY_SECRET value set on the server"><input aria-label="Recovery secret" type="password" value={recoverySecret} onChange={(e) => setRecoverySecret(e.target.value)} minLength={8} required autoComplete="off" /></Field> : null}
       {message ? <Notice tone={message.toLowerCase().includes("incorrect") || message.toLowerCase().includes("could not") || message.toLowerCase().includes("does not") || message.toLowerCase().includes("match") ? "bad" : "info"}>{message}</Notice> : null}
       <button className="btn btn-primary dark-button" type="submit" disabled={action.isPending}>{action.isPending ? "Please wait…" : mode === "login" ? "Sign in" : mode === "forgot" ? "Reset owner password" : hasOwner ? "Create customer account" : "Create owner account"}</button>
+      {mode !== "forgot" ? <>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "4px 0" }}>
+          <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.15)" }} />
+          <span style={{ fontSize: "13px", opacity: 0.7 }}>or</span>
+          <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.15)" }} />
+        </div>
+        <button type="button" onClick={() => { window.location.href = "/api/auth/google"; }} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.2)", backgroundColor: "#ffffff", color: "#333", fontWeight: "600", cursor: "pointer", fontSize: "15px" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          Continue with Google
+        </button>
+      </> : null}
       {mode === "login" && hasOwner ? <button className="forgot-link" type="button" onClick={() => changeMode("forgot")}>Forgot password?</button> : null}
       {mode === "forgot" ? <button className="switch-auth" type="button" onClick={() => changeMode("login")}>Back to sign in</button> : null}
       {hasOwner && mode !== "forgot" ? <button className="switch-auth" type="button" onClick={() => changeMode(mode === "login" ? "signup" : "login")}>{mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}</button> : null}
@@ -280,6 +291,24 @@ function Overview({ dashboard, onNavigate }: { dashboard: Dashboard; onNavigate:
 
 function readSession() {
   try {
+    // Check for Google OAuth token in URL hash first
+    if (window.location.hash.includes("google_token=")) {
+      const match = window.location.hash.match(/google_token=([^&]+)/);
+      if (match) {
+        const token = decodeURIComponent(match[1]);
+        window.history.replaceState(null, "", window.location.pathname);
+        try { window.localStorage.setItem("smm_session", token); } catch {}
+        return token;
+      }
+    }
+    // Check for Google error
+    if (window.location.search.includes("google_error=")) {
+      const match = window.location.search.match(/google_error=([^&]+)/);
+      if (match) {
+        alert("Google login: " + decodeURIComponent(match[1]));
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }
     return window.localStorage.getItem("smm_session") ?? "";
   } catch {
     return "";
@@ -300,6 +329,84 @@ function clearSession() {
   } catch {
     // The UI can still sign out by clearing its in-memory token.
   }
+}
+
+function aiAnswer(question: string): string {
+  const q = question.toLowerCase();
+  if (q.includes("price") || q.includes("rate") || q.includes("cost") || q.includes("kimat") || q.includes("paisa")) {
+    return "Hamari rates per 1,000 units hain! Har service ki apni rate hai - service menu me dekho. TikTok likes sirf Rs.215/1000 se shuru! 💰";
+  }
+  if (q.includes("order") && (q.includes("how") || q.includes("kaise") || q.includes("place"))) {
+    return "Order karna asaan hai! 1) Account banao 2) JazzCash se funds add karo 3) Service select karo, link aur quantity dalo 4) Order karo! 🚀";
+  }
+  if (q.includes("jazzcash") || q.includes("payment") || q.includes("pay") || q.includes("paisa") && q.includes("bhej")) {
+    return "JazzCash pe 03266040350 (Muhammad Sajeel) pe paise bhejo, phir panel me TID submit karo. Owner approve karega to balance add ho jayega! 💵";
+  }
+  if (q.includes("tid")) {
+    return "TID = Transaction ID! JazzCash se paise bhejne ke baad jo SMS aata hai, us me TID hota hai. Wo panel me 'Add Funds' me dalo! 📝";
+  }
+  if (q.includes("tiktok")) {
+    return "TikTok ke liye hamare paas likes, followers, views sab hain! 'TikTok Likes Low Drop' sirf Rs.215/1000! Service menu me dekho! 🎵";
+  }
+  if (q.includes("instagram") || q.includes("insta")) {
+    return "Instagram followers, likes sab available hain! Service menu me 'Instagram' search karo! 📸";
+  }
+  if (q.includes("youtube")) {
+    return "YouTube subscribers, views, likes sab milenge! Service menu check karo! 🎬";
+  }
+  if (q.includes("facebook") || q.includes("fb")) {
+    return "Facebook likes, followers, page likes sab hain! Service menu me dekho! 👍";
+  }
+  if (q.includes("status") || q.includes("track") || q.includes("order") && q.includes("kahan")) {
+    return "Apne orders ka status dashboard me 'Orders' section me dekho! Refresh karke latest status pata chalega! 📊";
+  }
+  if (q.includes("refund")) {
+    return "Refund ke liye WhatsApp pe rabta karo: 03266040350. Har case alag se dekha jata hai! 💬";
+  }
+  if (q.includes("safe") || q.includes("real")) {
+    return "Bilkul safe! Real aur active profiles se service milti hai. Pakistan ka trusted panel! ✅";
+  }
+  if (q.includes("salam") || q.includes("hello") || q.includes("hi") || q.includes("assalam")) {
+    return "Walaikum Assalam! 👋 Sajeel SMM Services me khush aamdeed! Kya poochna hai? Services, rates, ya order ke baare me?";
+  }
+  if (q.includes("thank") || q.includes("shukriya")) {
+    return "Khush aamdeed! 😊 Aur kuch poochna ho to batayein!";
+  }
+  return "Acha sawal! Iske liye WhatsApp pe rabta karein: 03266040350 - foran jawab milega! 💬 Ya phir services, rates, ya order ke baare me poochein!";
+}
+
+function AIChat() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<{ from: "ai" | "user"; text: string }[]>([
+    { from: "ai", text: "Assalam-o-Alaikum! 👋 Main Sajeel AI hun! Services, rates, ya order ke baare me kuch poochein!" },
+  ]);
+  const [input, setInput] = useState("");
+  const send = () => {
+    const text = input.trim();
+    if (!text) return;
+    setMessages((m) => [...m, { from: "user", text }, { from: "ai", text: aiAnswer(text) }]);
+    setInput("");
+  };
+  return <>
+    <button
+      onClick={() => setOpen(!open)}
+      title="AI se poochein"
+      style={{ position: "fixed", bottom: "94px", right: "22px", width: "58px", height: "58px", borderRadius: "50%", backgroundColor: "#7c3aed", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(0,0,0,0.3)", zIndex: 9999, fontSize: "28px" }}
+    >🤖</button>
+    {open ? <div style={{ position: "fixed", bottom: "162px", right: "22px", width: "320px", maxWidth: "calc(100vw - 44px)", height: "420px", maxHeight: "60vh", backgroundColor: "#1a1a2e", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ padding: "14px 16px", backgroundColor: "#7c3aed", color: "white", fontWeight: "bold", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>🤖 Sajeel AI</span>
+        <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "white", cursor: "pointer", fontSize: "18px" }}>✕</button>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+        {messages.map((m, i) => <div key={i} style={{ alignSelf: m.from === "user" ? "flex-end" : "flex-start", backgroundColor: m.from === "user" ? "#25D366" : "#2d2d44", color: "white", padding: "8px 12px", borderRadius: "12px", maxWidth: "85%", fontSize: "14px" }}>{m.text}</div>)}
+      </div>
+      <div style={{ padding: "10px", display: "flex", gap: "8px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Sawal likhein..." style={{ flex: 1, padding: "8px 12px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.2)", backgroundColor: "#2d2d44", color: "white", fontSize: "14px", outline: "none" }} />
+        <button onClick={send} style={{ padding: "8px 16px", borderRadius: "20px", border: "none", backgroundColor: "#7c3aed", color: "white", cursor: "pointer", fontWeight: "bold" }}>➤</button>
+      </div>
+    </div> : null}
+  </>;
 }
 
 export function App() {
@@ -335,9 +442,9 @@ export function App() {
       </svg>
     </a>
   );
-  if (token) return <>{whatsappFloat}<DashboardApp token={token} onLogout={logout} /></>;
+  if (token) return <>{whatsappFloat}<AIChat /><DashboardApp token={token} onLogout={logout} /></>;
   if (publicQuery.isPending) return <div className="loading"><span /><p>Preparing the service menu…</p></div>;
   if (publicQuery.isError) return <div className="fatal"><h2>Service menu unavailable</h2><p>Please try again.</p><button className="btn btn-primary dark-button" onClick={() => publicQuery.refetch()}>Retry</button></div>;
-  if (authMode) return <>{whatsappFloat}<AuthPanel initialMode={authMode} hasOwner={publicQuery.data.has_owner} onClose={() => setAuthMode(null)} onSuccess={setSession} /></>;
-  return <>{whatsappFloat}<PublicLanding data={publicQuery.data} onAuth={setAuthMode} /></>;
+  if (authMode) return <>{whatsappFloat}<AIChat /><AuthPanel initialMode={authMode} hasOwner={publicQuery.data.has_owner} onClose={() => setAuthMode(null)} onSuccess={setSession} /></>;
+  return <>{whatsappFloat}<AIChat /><PublicLanding data={publicQuery.data} onAuth={setAuthMode} /></>;
 }
