@@ -13,7 +13,8 @@ import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "./db.mjs";
 import * as schema from "./schema.mjs";
 
-const API_URL = "https://www.paksmmportal.com/api/v2";
+const API_URL = "https://www.bkpanel.com/api"; // BK Panel switch (was paksmmportal.com) — pending full API key from user
+const API_KEY_PARAM = "apiKey"; // BK Panel expects apiKey; PakSMM used `key`
 const USD_TO_PKR = 277;
 const PROVIDER_KEY_SETTING = "provider_api_key";
 const PROVIDER_CONNECTED_AT_SETTING = "provider_connected_at";
@@ -100,7 +101,7 @@ async function providerRequest(params, keyOverride) {
   const key = keyOverride ?? await getProviderKey();
   if (!key) return { ok: false, error: "Provider connection is not active. Ask the owner to reconnect it." };
   try {
-    const body = new URLSearchParams({ key, ...params });
+    const body = new URLSearchParams({ [API_KEY_PARAM]: key, ...params });
     const response = await fetch(API_URL, { method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" }, signal: AbortSignal.timeout(20000) });
     if (!response.ok) return { ok: false, error: `Provider returned HTTP ${response.status}.` };
     const data = await response.json();
@@ -134,7 +135,7 @@ async function fetchProviderServices(keyOverride) {
   const key = keyOverride ?? await getProviderKey();
   if (!key) return { ok: false, error: "Provider connection is not active. Ask the owner to reconnect it." };
   try {
-    const formBody = new URLSearchParams({ key, action: "services" }).toString();
+    const formBody = new URLSearchParams({ [API_KEY_PARAM]: key, action: "services" }).toString();
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
