@@ -13,8 +13,8 @@ import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "./db.mjs";
 import * as schema from "./schema.mjs";
 
-const API_URL = "https://www.bkpanel.com/api"; // BK Panel switch (was paksmmportal.com) — pending full API key from user
-const API_KEY_PARAM = "apiKey"; // BK Panel expects apiKey; PakSMM used `key`
+const API_URL = "https://www.bkpanel.com/api/v2"; // BK Panel switch — verified live 2026-10-22: /api/v2 + `key` param parses correctly ("incorrect API key" for bad keys); /api + apiKey is a dead legacy path ("action is not specfied")
+const API_KEY_PARAM = "key"; // BK Panel v2 expects `key` (same as PakSMM did)
 const USD_TO_PKR = 277;
 const PROVIDER_KEY_SETTING = "provider_api_key";
 const PROVIDER_CONNECTED_AT_SETTING = "provider_connected_at";
